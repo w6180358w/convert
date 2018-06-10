@@ -1,0 +1,1 @@
+{	"title": "文档转换API",	"name": "文档转换API",	"version": "0.0.0",	"description": "文档转换API",	"url" : "http://127.0.0.1:8080",	"sampleUrl" : "http://127.0.0.1:8080",	"template": {		"withCompare": false,		"withGenerator": false	},	"header": {    "title": "BASE",    "filename": "convert.md"  }}
