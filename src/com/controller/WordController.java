@@ -274,7 +274,7 @@ public class WordController {
 	 * @apiParamExample {json} Request-Example:
 	 *	{
 	 *	"merge":["F:\\1c","F:\\1cx","F:\\testc","F:\\测试c"],
-	 *	"output":"output":"f:\\测试新版.pdf",
+	 *	"output":"f:\\测试新版.pdf",
 	 *	}
 	 * @apiSuccessExample {json} Success-Response:
 	 *	{
