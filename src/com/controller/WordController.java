@@ -23,8 +23,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bean.OfficeBean;
+import com.jacob.com.ComThread;
 import com.service.inter.WordService;
 import com.util.DesUtil;
+import com.util.MSWordManager;
 import com.util.SystemUtil;
 import com.zhuozhengsoft.pageoffice.FileSaver;
 import com.zhuozhengsoft.pageoffice.OpenModeType;
@@ -122,7 +124,7 @@ public class WordController {
 		} catch (Exception e) {
 			logger.error("clear temp directory error :{} ",e);
 			code=0;
-			msg = "清空临时文件夹失败,msg:"+e.getMessage();
+			msg = "清空临时文件夹失败:"+e.getMessage();
 		}
 		logger.info("clear temp directory success:{} ");
 		return SystemUtil.request(code, "", msg);
@@ -184,9 +186,12 @@ public class WordController {
 		PageOfficeCtrl poCtrl=new PageOfficeCtrl(request);
 		//设置服务器页面
 		poCtrl.setServerPage(request.getContextPath()+"/poserver.zz");
+		
+		poCtrl.setAllowCopy(false);//禁止拷贝
+		poCtrl.setMenubar(false);//隐藏菜单栏
+		poCtrl.setOfficeToolbars(false);//隐藏Office工具条
 		//添加自定义按钮
 		poCtrl.addCustomToolButton("保存","Save()",1);
-		poCtrl.addCustomToolButton("关闭","CloseFile()",21);
 		//设置保存页面
 		poCtrl.setSaveFilePage("save?path="+URLEncoder.encode(path,"UTF-8"));
 		poCtrl.webOpen(getPath(path),OpenModeType.docNormalEdit,"张佚名");
@@ -297,7 +302,7 @@ public class WordController {
 			allPath = SystemUtil.getAllPath(file, result);
 		} catch (Exception e) {
 			logger.error("merge word error:{}",e);
-			msg = "合并失败,msg:"+e.getMessage();
+			msg = "合并失败:"+e.getMessage();
 			code = 0;
 		}
 		logger.info("merge word success:{}",allPath);
@@ -313,8 +318,15 @@ public class WordController {
 	 * 
 	 * @apiParam {String} path 文件路径+文件名（带后缀）
 	 * @apiParam {String} output 输出文件全路径+文件名+后缀 为空则保存到临时文件夹中
-	 * @apiParam {Data} data 需要替换的内容对象，key值为替换关键字，value为内容 如果替换内容为表格 key值必须以Table为开头 以【_】下划线为连接 表格标记为结尾 
-	 * 							例如：Table_1 表示替换第一个表格的内容  Table_2替换第二个表格的内容
+	 * @apiParam {Data} data 需要替换的内容对象，key值为替换关键字，value为内容 如果替换内容为表格 key值必须以Table为开头 以【_】下划线为连接 表格标记为结尾 <br>
+	 * 							例如：Table_1 表示替换第一个表格的内容  Table_2替换第二个表格的内容 <br>
+	 * 							内容中以$$标记的为特殊符号标记，总格式为 <strong>$字符1_字符1类型,字符2_字符2类型$字符3(不需要转类型)</strong><br>
+	 * 							例：<strong>$X_tuit,n_tdit,Y_it,2_tu,=5%, k_it,=2$</strong>.end <br>
+	 * 							其中逗号分隔标记字符串，下划线左边为输出字符串，右边为标记类型<strong>（it:斜体,tu:上标,td:下标）</strong> 
+	 * 							斜体和上下标可共存，上下标互斥。例：Y_it,2_tu 输出为Y（斜体）的二次方 <br>
+	 * 							如果没有下划线分割如=5%则直接输出=5% <br>
+	 * 							$$标记结束后的字符串直接输出，如上例中.end<br>
+	 * 							上例解析后为  X(上标斜体)n(下标斜体)Y(斜体)2(上标)=5% k(斜体)=2.end <br>
 	 * @apiParam {String[][]} data.Table_*  需要替换表格数据  一个二维数组  一维代表行  二维代表列
 	 *
 	 * @apiSuccess {Number} code 0:失败 1:成功
@@ -347,7 +359,7 @@ public class WordController {
 			allPath = SystemUtil.getAllPath(file, result);
 		} catch (Exception e) {
 			logger.error("replace word error:{}",e);
-			msg = "替换失败,msg:"+e.getMessage();
+			msg = "替换失败:"+e.getMessage();
 			code = 0;
 		}
 		logger.info("replace word success :{}",allPath);
@@ -404,7 +416,7 @@ public class WordController {
 			allPath = SystemUtil.getAllPath(file, result);
 		} catch (Exception e) {
 			logger.error("convert file error:{}",e);
-			msg = "转换失败,msg:"+e.getMessage();
+			msg = "转换失败:"+e.getMessage();
 			code = 0;
 		}
 		logger.info("convert file success :{}",allPath);
@@ -413,5 +425,30 @@ public class WordController {
 	//地址加密并转换编码
 	private String getDownloadKey(String path) throws Exception {
 		return URLEncoder.encode(DesUtil.encrypt(path, KEY),"UTF-8");
+	}
+	
+	@RequestMapping(value = "/test" , method = RequestMethod.GET)
+	@ResponseBody
+	public JSONObject test(HttpServletRequest request,
+			HttpServletResponse response) throws Exception{
+		MSWordManager ms= null;
+    	ComThread.InitSTA(); 
+    	String temp = null;
+    	try {
+			ms=new MSWordManager(false);  
+			ms.openDocument("f:\\zxy.docx");
+			ms.setSaveOnExit(false);
+			ms.save();
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if(ms!=null) {
+				ms.closeDocument();
+				ms.close();
+			}
+			ComThread.Release();
+			if(temp!=null && !"".equals(temp))new File(temp).delete();
+		}
+		return SystemUtil.request(1, "", "");
 	}
 }

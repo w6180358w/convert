@@ -1,5 +1,7 @@
 package com.util;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.bean.TableTagBean;
 import com.jacob.activeX.ActiveXComponent;
@@ -7,7 +9,7 @@ import com.jacob.com.Dispatch;
 import com.jacob.com.Variant; 
 public class MSWordManager { 
 	//文档类型
-	public static class docType{
+	public static class DocType{
 		public static final int WORD2003_DOC = 0;//Word 97 - 2003 文档 (.doc)   
 		public static final int WORD2003_DOT = 1;//Word 97 - 2003 模板 (.dot)    
 		public static final int TEXT = 3;//文本文档 (.txt)    
@@ -24,6 +26,17 @@ public class MSWordManager {
 		public static final int ODT = 9;//OpenDocument 文本 (.odt)    
 		public static final int WTF = 9;//WTF 文件 (.wtf)    
 	}
+	//文档类型
+	public static class TagType{
+		public static final String TAG_UP = "tu";//上标  
+		public static final String TAG_DOWN = "td";//下标
+		public static final String ITALIC = "it";//斜体  
+		
+		
+		public static final int TAG_TOGGLE = 9999998;//斜体  
+	}
+	
+	
 
     // word文档 
     private Dispatch doc; 
@@ -44,12 +57,12 @@ public class MSWordManager {
      * @param visible 为true表示word应用程序可见 
      */ 
     public MSWordManager(boolean visible) { 
-            if (word == null) { 
-                    word = new ActiveXComponent("Word.Application"); 
-                    word.setProperty("Visible", new Variant(visible)); 
-            } 
-            if (documents == null) 
-                    documents = word.getProperty("Documents").toDispatch(); 
+		if (word == null) { 
+		        word = new ActiveXComponent("Word.Application"); 
+		        word.setProperty("Visible", new Variant(visible)); 
+		} 
+		if (documents == null) 
+		        documents = word.getProperty("Documents").toDispatch(); 
     } 
 
     /** *//** 
@@ -58,7 +71,7 @@ public class MSWordManager {
      * @param saveOnExit boolean true-退出时保存文件，false-退出时不保存文件 
      */ 
     public void setSaveOnExit(boolean saveOnExit) { 
-            this.saveOnExit = saveOnExit; 
+    	this.saveOnExit = saveOnExit; 
     } 
 
     /** *//** 
@@ -66,8 +79,8 @@ public class MSWordManager {
      *     
      */ 
     public void createNewDocument() { 
-            doc = Dispatch.call(documents, "Add").toDispatch(); 
-            selection = Dispatch.get(word, "Selection").toDispatch(); 
+		doc = Dispatch.call(documents, "Add").toDispatch(); 
+		selection = Dispatch.get(word, "Selection").toDispatch(); 
     } 
 
     /** *//** 
@@ -76,9 +89,9 @@ public class MSWordManager {
      * @param docPath 
      */ 
     public void openDocument(String docPath) { 
-            closeDocument(); 
-            doc = Dispatch.call(documents, "Open", docPath, false, false).toDispatch(); 
-            selection = Dispatch.get(word, "Selection").toDispatch(); 
+		closeDocument(); 
+		doc = Dispatch.call(documents, "Open", docPath, false, false).toDispatch(); 
+		selection = Dispatch.get(word, "Selection").toDispatch(); 
     } 
 
     /** *//** 
@@ -87,13 +100,13 @@ public class MSWordManager {
      * @param pos 移动的距离 
      */ 
     public void moveUp(int pos) { 
-            if (selection == null) 
-                    selection = Dispatch.get(word, "Selection").toDispatch(); 
-            for (int i = 0; i < pos; i++) 
-                    Dispatch.call(selection, "MoveUp"); 
-
+		if (selection == null) 
+		        selection = Dispatch.get(word, "Selection").toDispatch(); 
+		for (int i = 0; i < pos; i++) 
+		        Dispatch.call(selection, "MoveUp"); 
+		
     } 
-
+    
     /** *//** 
      * 把选定的内容或者插入点向下移动 
      *     
@@ -112,11 +125,11 @@ public class MSWordManager {
      * @param pos 移动的距离 
      */ 
     public void moveLeft(int pos) { 
-            if (selection == null) 
-                    selection = Dispatch.get(word, "Selection").toDispatch(); 
-            for (int i = 0; i < pos; i++) { 
-                    Dispatch.call(selection, "MoveLeft"); 
-            } 
+		if (selection == null) 
+		        selection = Dispatch.get(word, "Selection").toDispatch(); 
+		for (int i = 0; i < pos; i++) { 
+		        Dispatch.call(selection, "MoveLeft"); 
+		} 
     } 
 
     /** *//** 
@@ -125,10 +138,10 @@ public class MSWordManager {
      * @param pos 移动的距离 
      */ 
     public void moveRight(int pos) { 
-            if (selection == null) 
-                    selection = Dispatch.get(word, "Selection").toDispatch(); 
-            for (int i = 0; i < pos; i++) 
-                    Dispatch.call(selection, "MoveRight"); 
+		if (selection == null) 
+		        selection = Dispatch.get(word, "Selection").toDispatch(); 
+		for (int i = 0; i < pos; i++) 
+		        Dispatch.call(selection, "MoveRight"); 
     } 
 
     /** *//** 
@@ -136,15 +149,15 @@ public class MSWordManager {
      *     
      */ 
     public void moveStart() { 
-            if (selection == null) 
-                    selection = Dispatch.get(word, "Selection").toDispatch(); 
-            Dispatch.call(selection, "HomeKey", new Variant(6)); 
+		if (selection == null) 
+		        selection = Dispatch.get(word, "Selection").toDispatch(); 
+		Dispatch.call(selection, "HomeKey", new Variant(6)); 
     } 
      
     public void moveEnd() { 
-            if (selection == null) 
-                    selection = Dispatch.get(word, "Selection").toDispatch(); 
-            Dispatch.call(selection, "EndKey", new Variant(6)); 
+		if (selection == null) 
+		        selection = Dispatch.get(word, "Selection").toDispatch(); 
+		Dispatch.call(selection, "EndKey", new Variant(6)); 
     } 
 
     /** *//** 
@@ -154,22 +167,22 @@ public class MSWordManager {
      * @return boolean true-查找到并选中该文本，false-未查找到文本 
      */ 
     public boolean find(String toFindText) { 
-            if (toFindText == null || toFindText.equals("")) 
-                    return false; 
-            // 从selection所在位置开始查询 
-            Dispatch find = ActiveXComponent.call(selection, "Find").toDispatch(); 
-            // 设置要查找的内容 
-            Dispatch.put(find, "Text", toFindText); 
-            // 向前查找 
-            Dispatch.put(find, "Forward", "True"); 
-            // 设置格式 
-            Dispatch.put(find, "Format", "True"); 
-            // 大小写匹配 
-            Dispatch.put(find, "MatchCase", "True"); 
-            // 全字匹配 
-            Dispatch.put(find, "MatchWholeWord", "True"); 
-            // 查找并选中 
-            return Dispatch.call(find, "Execute").getBoolean(); 
+		if (toFindText == null || toFindText.equals("")) 
+		        return false; 
+		// 从selection所在位置开始查询 
+		Dispatch find = ActiveXComponent.call(selection, "Find").toDispatch(); 
+		// 设置要查找的内容 
+		Dispatch.put(find, "Text", toFindText); 
+		// 向前查找 
+		Dispatch.put(find, "Forward", "True"); 
+		// 设置格式 
+		Dispatch.put(find, "Format", "True"); 
+		// 大小写匹配 
+		Dispatch.put(find, "MatchCase", "True"); 
+		// 全字匹配 
+		Dispatch.put(find, "MatchWholeWord", "True"); 
+		// 查找并选中 
+		return Dispatch.call(find, "Execute").getBoolean(); 
     } 
 
     /** *//** 
@@ -180,10 +193,10 @@ public class MSWordManager {
      * @return 
      */ 
     public boolean replaceText(String toFindText, String newText) { 
-            if (!find(toFindText)) 
-                    return false; 
-            Dispatch.put(selection, "Text", newText); 
-            return true; 
+		if (!find(toFindText)) 
+		        return false; 
+		Dispatch.put(selection, "Text", newText); 
+		return true; 
     } 
 
     /** *//** 
@@ -193,21 +206,72 @@ public class MSWordManager {
      * @param newText 要替换的内容 
      */ 
     public void replaceAllText(String toFindText, String newText) { 
-    	toFindText = this.getKey(toFindText);
+    	toFindText = this.getKey(toFindText.trim());
     	this.moveStart();
         while (find(toFindText)) { 
-            Dispatch.put(selection, "Text", newText); 
-            Dispatch.call(selection, "MoveRight"); 
+        	replaceText(newText);
         } 
     } 
-
+    /**
+     * 真正替换内容的方法
+     * @param newText
+     */
+    private void replaceText(String newText) {
+    	//如果为标记文本 替换标记文本
+    	if(this.isTag(newText)) {
+    		this.replaceTag(newText);
+    	}else {
+    		//替换普通文本
+    		Dispatch.put(selection, "Text", newText); 
+            Dispatch.call(selection, "MoveRight"); 
+    	}
+    }
+    /** *//** 
+     * 替换标记文本 
+     *    格式 $X_it,n_td,Y_it,2_tu,=5%, k_it,=2$.aaabbb
+     *    解析后为  X(斜体)n(下标)Y(斜体)2(上标)=5% k(斜体)=2.aaabbb
+     * @param toFindText 查找字符串 
+     * @param newText 要替换的内容 
+     */ 
+    private void replaceTag(String newText) { 
+    	//获取字体
+    	Dispatch font = Dispatch.get(selection, "Font").toDispatch();
+    	//替换原来的字符传为空
+    	Dispatch.put(selection, "Text", ""); 
+    	//标记中的字符串，标记后面的字符串（解析完标记后追加）
+        String tags = "",text = "";
+        //标记正则
+        String regex = this.getTagRegex();
+        //获取字符串
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(newText);
+        if(matcher.find()) {
+        	tags = matcher.group(1);
+        	text = matcher.replaceFirst("");
+        }
+        //解析
+        for (String s : tags.split(",")) {
+			String[] tag = s.split("_");
+			if(tag.length>1) {
+				//设置字体
+				this.setTagFont(font, tag[1]);
+				Dispatch.call(selection, "TypeText",tag[0]); 
+				//清除字体
+				this.setTagFont(font, tag[1]);
+			}else {
+				Dispatch.call(selection, "TypeText",tag[0]);
+			}
+		}
+        Dispatch.call(selection, "TypeText",text); 
+    }
+    
     /** *//** 
      * 在当前插入点插入字符串 
      *     
      * @param newText 要插入的新字符串 
      */ 
     public void insertText(String newText) { 
-            Dispatch.put(selection, "Text", newText); 
+    	Dispatch.put(selection, "Text", newText); 
     } 
 
     /** *//** 
@@ -217,11 +281,11 @@ public class MSWordManager {
      * @return 
      */ 
     public boolean replaceImage(String toFindText, String imagePath) { 
-            if (!find(toFindText)) 
-                    return false; 
-            Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
-                            "AddPicture", imagePath); 
-            return true; 
+		if (!find(toFindText)) 
+		        return false; 
+		Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
+		                "AddPicture", imagePath); 
+		return true; 
     } 
 
     /** *//** 
@@ -231,11 +295,11 @@ public class MSWordManager {
      * @param imagePath 图片路径 
      */ 
     public void replaceAllImage(String toFindText, String imagePath) { 
-            while (find(toFindText)) { 
-                    Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
-                                    "AddPicture", imagePath); 
-                    Dispatch.call(selection, "MoveRight"); 
-            } 
+		while (find(toFindText)) { 
+		        Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
+		                        "AddPicture", imagePath); 
+		        Dispatch.call(selection, "MoveRight"); 
+		} 
     } 
 
     /** *//** 
@@ -244,8 +308,8 @@ public class MSWordManager {
      * @param imagePath 图片路径 
      */ 
     public void insertImage(String imagePath) { 
-            Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
-                            "AddPicture", imagePath); 
+		Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
+		                "AddPicture", imagePath); 
     } 
 
     /** *//** 
@@ -259,18 +323,18 @@ public class MSWordManager {
      */ 
     public void mergeCell(int tableIndex, int fstCellRowIdx, int fstCellColIdx, 
                     int secCellRowIdx, int secCellColIdx) { 
-            // 所有表格 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            Dispatch fstCell = Dispatch.call(table, "Cell", 
-                            new Variant(fstCellRowIdx), new Variant(fstCellColIdx)) 
-                            .toDispatch(); 
-            Dispatch secCell = Dispatch.call(table, "Cell", 
-                            new Variant(secCellRowIdx), new Variant(secCellColIdx)) 
-                            .toDispatch(); 
-            Dispatch.call(fstCell, "Merge", secCell); 
+		// 所有表格 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		Dispatch fstCell = Dispatch.call(table, "Cell", 
+		                new Variant(fstCellRowIdx), new Variant(fstCellColIdx)) 
+		                .toDispatch(); 
+		Dispatch secCell = Dispatch.call(table, "Cell", 
+		                new Variant(secCellRowIdx), new Variant(secCellColIdx)) 
+		                .toDispatch(); 
+		Dispatch.call(fstCell, "Merge", secCell); 
     } 
 
     /** *//** 
@@ -282,16 +346,16 @@ public class MSWordManager {
      * @param txt 
      */ 
     public void putTxtToCell(int tableIndex, int cellRowIdx, int cellColIdx, 
-                    String txt) { 
-            // 所有表格 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            Dispatch cell = Dispatch.call(table, "Cell", new Variant(cellRowIdx), 
-                            new Variant(cellColIdx)).toDispatch(); 
-            Dispatch.call(cell, "Select"); 
-            Dispatch.put(selection, "Text", txt); 
+		        String txt) { 
+		// 所有表格 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		Dispatch cell = Dispatch.call(table, "Cell", new Variant(cellRowIdx), 
+		                new Variant(cellColIdx)).toDispatch(); 
+		Dispatch.call(cell, "Select"); 
+		Dispatch.put(selection, "Text", txt); 
     } 
 
     /** *//** 
@@ -300,11 +364,11 @@ public class MSWordManager {
      * @param pos 
      */ 
     public void copy(String toCopyText) { 
-            moveStart(); 
-            if (this.find(toCopyText)) { 
-                    Dispatch textRange = Dispatch.get(selection, "Range").toDispatch(); 
-                    Dispatch.call(textRange, "Copy"); 
-            } 
+		moveStart(); 
+		if (this.find(toCopyText)) { 
+		        Dispatch textRange = Dispatch.get(selection, "Range").toDispatch(); 
+		        Dispatch.call(textRange, "Copy"); 
+		} 
     } 
 
     /** *//** 
@@ -313,11 +377,11 @@ public class MSWordManager {
      * @param pos 
      */ 
     public void paste(String pos) { 
-            moveStart(); 
-            if (this.find(pos)) { 
-                    Dispatch textRange = Dispatch.get(selection, "Range").toDispatch(); 
-                    Dispatch.call(textRange, "Paste"); 
-            } 
+		moveStart(); 
+		if (this.find(pos)) { 
+		        Dispatch textRange = Dispatch.get(selection, "Range").toDispatch(); 
+		        Dispatch.call(textRange, "Paste"); 
+		} 
     } 
 
     /** *//** 
@@ -327,15 +391,15 @@ public class MSWordManager {
      * @param tableIndex 被拷贝的表格在word文档中所处的位置 
      */ 
     public void copyTable(String pos,int tableIndex) { 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            Dispatch range = Dispatch.get(table, "Range").toDispatch(); 
-            Dispatch.call(range, "Copy"); 
-            if (this.find(pos)) { 
-                    Dispatch textRange = Dispatch.get(selection, "Range").toDispatch(); 
-                    Dispatch.call(textRange, "Paste"); 
-            } 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		Dispatch range = Dispatch.get(table, "Range").toDispatch(); 
+		Dispatch.call(range, "Copy"); 
+		if (this.find(pos)) { 
+		        Dispatch textRange = Dispatch.get(selection, "Range").toDispatch(); 
+		        Dispatch.call(textRange, "Paste"); 
+		} 
     } 
 
     /** *//** 
@@ -345,11 +409,11 @@ public class MSWordManager {
      * @param tableIndex 被拷贝的段落在另一格文档中的序号(从1开始) 
      */ 
     public void copyParagraphFromAnotherDoc(String anotherDocPath, 
-                    int paragraphIndex) { 
-            Dispatch wordContent = Dispatch.get(doc, "Content").toDispatch(); // 取得当前文档的内容 
-            Dispatch.call(wordContent, "InsertAfter", "$selection$");// 插入特殊符定位插入点 
-            copyParagraphFromAnotherDoc(anotherDocPath, paragraphIndex, 
-                            "$selection$"); 
+		        int paragraphIndex) { 
+		Dispatch wordContent = Dispatch.get(doc, "Content").toDispatch(); // 取得当前文档的内容 
+		Dispatch.call(wordContent, "InsertAfter", "$selection$");// 插入特殊符定位插入点 
+		copyParagraphFromAnotherDoc(anotherDocPath, paragraphIndex, 
+		                "$selection$"); 
     } 
 
     /** *//** 
@@ -360,30 +424,30 @@ public class MSWordManager {
      * @param pos 当前文档指定的位置 
      */ 
     public void copyParagraphFromAnotherDoc(String anotherDocPath, 
-                    int paragraphIndex, String pos) { 
-            Dispatch doc2 = null; 
-            try { 
-                    doc2 = Dispatch.call(documents, "Open", anotherDocPath) 
-                                    .toDispatch(); 
-                    Dispatch paragraphs = Dispatch.get(doc2, "Paragraphs").toDispatch(); 
-
-                    Dispatch paragraph = Dispatch.call(paragraphs, "Item", 
-                                    new Variant(paragraphIndex)).toDispatch(); 
-                    Dispatch range = Dispatch.get(paragraph, "Range").toDispatch(); 
-                    Dispatch.call(range, "Copy"); 
-                    if (this.find(pos)) { 
-                            Dispatch textRange = Dispatch.get(selection, "Range") 
-                                            .toDispatch(); 
-                            Dispatch.call(textRange, "Paste"); 
-                    } 
-            } catch (Exception e) { 
-                    e.printStackTrace(); 
-            } finally { 
-                    if (doc2 != null) { 
-                            Dispatch.call(doc2, "Close", new Variant(saveOnExit)); 
-                            doc2 = null; 
-                    } 
-            } 
+		        int paragraphIndex, String pos) { 
+		Dispatch doc2 = null; 
+		try { 
+		        doc2 = Dispatch.call(documents, "Open", anotherDocPath) 
+		                        .toDispatch(); 
+		        Dispatch paragraphs = Dispatch.get(doc2, "Paragraphs").toDispatch(); 
+		
+		        Dispatch paragraph = Dispatch.call(paragraphs, "Item", 
+		                        new Variant(paragraphIndex)).toDispatch(); 
+		        Dispatch range = Dispatch.get(paragraph, "Range").toDispatch(); 
+		        Dispatch.call(range, "Copy"); 
+		        if (this.find(pos)) { 
+		                Dispatch textRange = Dispatch.get(selection, "Range") 
+		                                .toDispatch(); 
+		                Dispatch.call(textRange, "Paste"); 
+		        } 
+		} catch (Exception e) { 
+		        e.printStackTrace(); 
+		} finally { 
+		        if (doc2 != null) { 
+		                Dispatch.call(doc2, "Close", new Variant(saveOnExit)); 
+		                doc2 = null; 
+		        } 
+		} 
     } 
 
     /** *//** 
@@ -394,29 +458,29 @@ public class MSWordManager {
      * @param pos 当前文档指定的位置 
      */ 
     public void copyTableFromAnotherDoc(String anotherDocPath, int tableIndex, 
-                    String pos) { 
-            Dispatch doc2 = null; 
-            try { 
-                    doc2 = Dispatch.call(documents, "Open", anotherDocPath) 
-                                    .toDispatch(); 
-                    Dispatch tables = Dispatch.get(doc2, "Tables").toDispatch(); 
-                    Dispatch table = Dispatch.call(tables, "Item", 
-                                    new Variant(tableIndex)).toDispatch(); 
-                    Dispatch range = Dispatch.get(table, "Range").toDispatch(); 
-                    Dispatch.call(range, "Copy"); 
-                    if (this.find(pos)) { 
-                            Dispatch textRange = Dispatch.get(selection, "Range") 
-                                            .toDispatch(); 
-                            Dispatch.call(textRange, "Paste"); 
-                    } 
-            } catch (Exception e) { 
-                    e.printStackTrace(); 
-            } finally { 
-                    if (doc2 != null) { 
-                            Dispatch.call(doc2, "Close", new Variant(saveOnExit)); 
-                            doc2 = null; 
-                    } 
-            } 
+		        String pos) { 
+		Dispatch doc2 = null; 
+		try { 
+		        doc2 = Dispatch.call(documents, "Open", anotherDocPath) 
+		                        .toDispatch(); 
+		        Dispatch tables = Dispatch.get(doc2, "Tables").toDispatch(); 
+		        Dispatch table = Dispatch.call(tables, "Item", 
+		                        new Variant(tableIndex)).toDispatch(); 
+		        Dispatch range = Dispatch.get(table, "Range").toDispatch(); 
+		        Dispatch.call(range, "Copy"); 
+		        if (this.find(pos)) { 
+		                Dispatch textRange = Dispatch.get(selection, "Range") 
+		                                .toDispatch(); 
+		                Dispatch.call(textRange, "Paste"); 
+		        } 
+		} catch (Exception e) { 
+		        e.printStackTrace(); 
+		} finally { 
+		        if (doc2 != null) { 
+		                Dispatch.call(doc2, "Close", new Variant(saveOnExit)); 
+		                doc2 = null; 
+		        } 
+		} 
     } 
 
     /** *//** 
@@ -427,29 +491,29 @@ public class MSWordManager {
      * @param pos 当前文档指定的位置 
      */ 
     public void copyImageFromAnotherDoc(String anotherDocPath, int shapeIndex, 
-                    String pos) { 
-            Dispatch doc2 = null; 
-            try { 
-                    doc2 = Dispatch.call(documents, "Open", anotherDocPath) 
-                                    .toDispatch(); 
-                    Dispatch shapes = Dispatch.get(doc2, "InLineShapes").toDispatch(); 
-                    Dispatch shape = Dispatch.call(shapes, "Item", 
-                                    new Variant(shapeIndex)).toDispatch(); 
-                    Dispatch imageRange = Dispatch.get(shape, "Range").toDispatch(); 
-                    Dispatch.call(imageRange, "Copy"); 
-                    if (this.find(pos)) { 
-                            Dispatch textRange = Dispatch.get(selection, "Range") 
-                                            .toDispatch(); 
-                            Dispatch.call(textRange, "Paste"); 
-                    } 
-            } catch (Exception e) { 
-                    e.printStackTrace(); 
-            } finally { 
-                    if (doc2 != null) { 
-                            Dispatch.call(doc2, "Close", new Variant(saveOnExit)); 
-                            doc2 = null; 
-                    } 
-            } 
+		        String pos) { 
+		Dispatch doc2 = null; 
+		try { 
+		        doc2 = Dispatch.call(documents, "Open", anotherDocPath) 
+		                        .toDispatch(); 
+		        Dispatch shapes = Dispatch.get(doc2, "InLineShapes").toDispatch(); 
+		        Dispatch shape = Dispatch.call(shapes, "Item", 
+		                        new Variant(shapeIndex)).toDispatch(); 
+		        Dispatch imageRange = Dispatch.get(shape, "Range").toDispatch(); 
+		        Dispatch.call(imageRange, "Copy"); 
+		        if (this.find(pos)) { 
+		                Dispatch textRange = Dispatch.get(selection, "Range") 
+		                                .toDispatch(); 
+		                Dispatch.call(textRange, "Paste"); 
+		        } 
+		} catch (Exception e) { 
+		        e.printStackTrace(); 
+		} finally { 
+		        if (doc2 != null) { 
+		                Dispatch.call(doc2, "Close", new Variant(saveOnExit)); 
+		                doc2 = null; 
+		        } 
+		} 
     } 
 
     /** *//** 
@@ -460,14 +524,12 @@ public class MSWordManager {
      * @param rows 行数 
      */ 
     public void createTable(int numCols, int numRows){//(String pos, int numCols, int numRows) { 
-//            if (!find(pos)) { 
-                    Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-                    Dispatch range = Dispatch.get(selection, "Range").toDispatch(); 
-                    Dispatch.call(tables, "Add", range, 
-                                    new Variant(numRows), new Variant(numCols)).toDispatch(); 
-                    Dispatch.call(selection, "MoveRight"); 
-                    moveEnd(); 
-//            } 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		Dispatch range = Dispatch.get(selection, "Range").toDispatch(); 
+		Dispatch.call(tables, "Add", range, 
+		                new Variant(numRows), new Variant(numCols)).toDispatch(); 
+		Dispatch.call(selection, "MoveRight"); 
+		moveEnd(); 
     } 
 
     /** *//** 
@@ -477,16 +539,16 @@ public class MSWordManager {
      * @param rowIndex 指定行的序号(从1开始) 
      */ 
     public void addTableRow(int tableIndex, int rowIndex) { 
-            // 所有表格 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            // 表格的所有行 
-            Dispatch rows = Dispatch.get(table, "Rows").toDispatch(); 
-            Dispatch row = Dispatch.call(rows, "Item", new Variant(rowIndex)) 
-                            .toDispatch(); 
-            Dispatch.call(rows, "Add", new Variant(row)); 
+		// 所有表格 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		// 表格的所有行 
+		Dispatch rows = Dispatch.get(table, "Rows").toDispatch(); 
+		Dispatch row = Dispatch.call(rows, "Item", new Variant(rowIndex)) 
+		                .toDispatch(); 
+		Dispatch.call(rows, "Add", new Variant(row)); 
     } 
 
     /** *//** 
@@ -495,15 +557,15 @@ public class MSWordManager {
      * @param tableIndex word文档中的第N张表(从1开始) 
      */ 
     public void addFirstTableRow(int tableIndex) { 
-            // 所有表格 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            // 表格的所有行 
-            Dispatch rows = Dispatch.get(table, "Rows").toDispatch(); 
-            Dispatch row = Dispatch.get(rows, "First").toDispatch(); 
-            Dispatch.call(rows, "Add", new Variant(row)); 
+		// 所有表格 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		// 表格的所有行 
+		Dispatch rows = Dispatch.get(table, "Rows").toDispatch(); 
+		Dispatch row = Dispatch.get(rows, "First").toDispatch(); 
+		Dispatch.call(rows, "Add", new Variant(row)); 
     } 
 
     /** *//** 
@@ -530,13 +592,13 @@ public class MSWordManager {
      * @param tableIndex word文档中的第N张表(从1开始) 
      */ 
     public void addRow(int tableIndex) { 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            // 表格的所有行 
-            Dispatch rows = Dispatch.get(table, "Rows").toDispatch(); 
-            Dispatch.call(rows, "Add"); 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		// 表格的所有行 
+		Dispatch rows = Dispatch.get(table, "Rows").toDispatch(); 
+		Dispatch.call(rows, "Add"); 
     } 
     /**
      * 替换表格内容
@@ -577,14 +639,12 @@ public class MSWordManager {
 		int rowCount = Dispatch.get(rows, "Count").changeType(  
                 Variant.VariantInt).getInt();
 		for(int j=0;j<rowCount;j++) {
-			System.out.println("-------------开始查询表格行->[table["+tableIndex+"]]:[row["+j+"]]-----------------");
 			//循环所有列
 			Dispatch row = Dispatch.call(rows, "Item",new Variant(j+1)).toDispatch(); 
     		Dispatch cells = Dispatch.get(row, "Cells").toDispatch(); 
     		int celCount = Dispatch.get(cells, "Count").changeType(  
                     Variant.VariantInt).getInt();
     		for(int k=0;k<celCount;k++) {
-    			System.out.println("-------------开始查询单元格->[table["+tableIndex+"]]:[row["+j+"]]:[cell["+k+"]]-----------------");
     			//获取单元格的值  和数据中的key比对  如果一样  此行为开始行
     			Dispatch cell = Dispatch.call(cells, "Item",new Variant(k+1)).toDispatch(); 
         		String text = Dispatch.get(Dispatch.get(cell,"Range").toDispatch(), "Text").changeType(  
@@ -593,14 +653,12 @@ public class MSWordManager {
         			ret = true;
         			break;
         		}
-        		System.out.println("-------------查询单元格结束->[table["+tableIndex+"]]:[row["+j+"]]:[cell["+k+"]["+text+"]]-----------------");
         	}
     		if(ret) {
     			bean.setRow(row);
     			bean.setRowIndex(j+1);
     			break;
     		}
-    		System.out.println("-------------查询表格行结束->[table["+tableIndex+"]]:[row["+j+"]]-----------------");
     	}
 		if(ret) {
 			bean.setTable(table);
@@ -627,11 +685,9 @@ public class MSWordManager {
         		cell = Dispatch.call(cells, "Item",new Variant(i+1)).toDispatch(); 
         	}else {
         		cell = Dispatch.call(cells, "Add").toDispatch(); 
-            	//cell = Dispatch.get(Dispatch.get(row, "Cells").toDispatch(), "Last").toDispatch(); 
         	}
-        	Dispatch.call(cell, "Select");  
-            Dispatch selection = Dispatch.get(word, "Selection").toDispatch(); // 输入内容需要的对象  
-            Dispatch.put(selection, "Text", i<dataList.size()?dataList.get(i):"");
+        	Dispatch.call(cell, "Select");  //选择单元格
+            this.replaceText(i<dataList.size()?dataList.get(i):"");
         }
     }
     /** *//** 
@@ -640,15 +696,15 @@ public class MSWordManager {
      * @param tableIndex word文档中的第N张表(从1开始) 
      */ 
     public void addCol(int tableIndex) { 
-            // 所有表格 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            // 表格的所有行 
-            Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
-            Dispatch.call(cols, "Add").toDispatch(); 
-            Dispatch.call(cols, "AutoFit"); 
+	    // 所有表格 
+	    Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+	    // 要填充的表格 
+	    Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+	                    .toDispatch(); 
+	    // 表格的所有行 
+	    Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
+	    Dispatch.call(cols, "Add").toDispatch(); 
+	    Dispatch.call(cols, "AutoFit"); 
     } 
 
     /** *//** 
@@ -658,19 +714,19 @@ public class MSWordManager {
      * @param colIndex    指定列的序号 (从1开始) 
      */ 
     public void addTableCol(int tableIndex, int colIndex) { 
-            // 所有表格 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            // 表格的所有行 
-            Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
-            System.out.println(Dispatch.get(cols, "Count")); 
-            Dispatch col = Dispatch.call(cols, "Item", new Variant(colIndex)) 
-                            .toDispatch(); 
-            // Dispatch col = Dispatch.get(cols, "First").toDispatch(); 
-            Dispatch.call(cols, "Add", col).toDispatch(); 
-            Dispatch.call(cols, "AutoFit"); 
+		// 所有表格 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		// 表格的所有行 
+		Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
+		System.out.println(Dispatch.get(cols, "Count")); 
+		Dispatch col = Dispatch.call(cols, "Item", new Variant(colIndex)) 
+		                .toDispatch(); 
+		// Dispatch col = Dispatch.get(cols, "First").toDispatch(); 
+		Dispatch.call(cols, "Add", col).toDispatch(); 
+		Dispatch.call(cols, "AutoFit"); 
     } 
 
     /** *//** 
@@ -679,15 +735,15 @@ public class MSWordManager {
      * @param tableIndex word文档中的第N张表(从1开始) 
      */ 
     public void addFirstTableCol(int tableIndex) { 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            // 表格的所有行 
-            Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
-            Dispatch col = Dispatch.get(cols, "First").toDispatch(); 
-            Dispatch.call(cols, "Add", col).toDispatch(); 
-            Dispatch.call(cols, "AutoFit"); 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		// 表格的所有行 
+		Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
+		Dispatch col = Dispatch.get(cols, "First").toDispatch(); 
+		Dispatch.call(cols, "Add", col).toDispatch(); 
+		Dispatch.call(cols, "AutoFit"); 
     } 
 
     /** *//** 
@@ -696,15 +752,15 @@ public class MSWordManager {
      * @param tableIndex word文档中的第N张表(从1开始) 
      */ 
     public void addLastTableCol(int tableIndex) { 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            // 要填充的表格 
-            Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
-                            .toDispatch(); 
-            // 表格的所有行 
-            Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
-            Dispatch col = Dispatch.get(cols, "Last").toDispatch(); 
-            Dispatch.call(cols, "Add", col).toDispatch(); 
-            Dispatch.call(cols, "AutoFit"); 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		// 要填充的表格 
+		Dispatch table = Dispatch.call(tables, "Item", new Variant(tableIndex)) 
+		                .toDispatch(); 
+		// 表格的所有行 
+		Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
+		Dispatch col = Dispatch.get(cols, "Last").toDispatch(); 
+		Dispatch.call(cols, "Add", col).toDispatch(); 
+		Dispatch.call(cols, "AutoFit"); 
     } 
 
     /** *//** 
@@ -712,14 +768,14 @@ public class MSWordManager {
      *     
      */ 
     public void autoFitTable() { 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            int count = Dispatch.get(tables, "Count").toInt(); 
-            for (int i = 0; i < count; i++) { 
-                    Dispatch table = Dispatch.call(tables, "Item", new Variant(i + 1)) 
-                                    .toDispatch(); 
-                    Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
-                    Dispatch.call(cols, "AutoFit"); 
-            } 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		int count = Dispatch.get(tables, "Count").toInt(); 
+		for (int i = 0; i < count; i++) { 
+		        Dispatch table = Dispatch.call(tables, "Item", new Variant(i + 1)) 
+		                        .toDispatch(); 
+		        Dispatch cols = Dispatch.get(table, "Columns").toDispatch(); 
+		        Dispatch.call(cols, "AutoFit"); 
+		} 
     } 
 
     /** *//** 
@@ -727,16 +783,16 @@ public class MSWordManager {
      *     
      */ 
     public void callWordMacro() { 
-            Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
-            int count = Dispatch.get(tables, "Count").toInt(); 
-            Variant vMacroName = new Variant("Normal.NewMacros.tableFit"); 
-            Variant para[] = new Variant[] { vMacroName }; 
-            for (int i = 0; i < para.length; i++) { 
-                    Dispatch table = Dispatch.call(tables, "Item", new Variant(i + 1)) 
-                                    .toDispatch(); 
-                    Dispatch.call(table, "Select"); 
-                    Dispatch.call(word, "Run", "tableFitContent"); 
-            } 
+		Dispatch tables = Dispatch.get(doc, "Tables").toDispatch(); 
+		int count = Dispatch.get(tables, "Count").toInt(); 
+		Variant vMacroName = new Variant("Normal.NewMacros.tableFit"); 
+		Variant para[] = new Variant[] { vMacroName }; 
+		for (int i = 0; i < para.length; i++) { 
+		        Dispatch table = Dispatch.call(tables, "Item", new Variant(i + 1)) 
+		                        .toDispatch(); 
+		        Dispatch.call(table, "Select"); 
+		        Dispatch.call(word, "Run", "tableFitContent"); 
+		} 
     } 
 
     /** *//** 
@@ -751,13 +807,13 @@ public class MSWordManager {
      */ 
     public void setFont(boolean bold, boolean italic, boolean underLine, 
                     String colorSize, String size, String name) { 
-            Dispatch font = Dispatch.get(selection, "Font").toDispatch(); 
-            Dispatch.put(font, "Name", new Variant(name)); 
-            Dispatch.put(font, "Bold", new Variant(bold)); 
-            Dispatch.put(font, "Italic", new Variant(italic)); 
-            Dispatch.put(font, "Underline", new Variant(underLine)); 
-            Dispatch.put(font, "Color", colorSize); 
-            Dispatch.put(font, "Size", size); 
+		Dispatch font = Dispatch.get(selection, "Font").toDispatch(); 
+		Dispatch.put(font, "Name", new Variant(name)); 
+		Dispatch.put(font, "Bold", new Variant(bold)); 
+		Dispatch.put(font, "Italic", new Variant(italic)); 
+		Dispatch.put(font, "Underline", new Variant(underLine)); 
+		Dispatch.put(font, "Color", colorSize); 
+		Dispatch.put(font, "Size", size); 
     } 
 
     /** *//** 
@@ -797,10 +853,10 @@ public class MSWordManager {
      *     
      */ 
     public void closeDocument() { 
-            if (doc != null) { 
-                    Dispatch.call(doc, "Close", new Variant(saveOnExit)); 
-                    doc = null; 
-            } 
+		if (doc != null) { 
+		        Dispatch.call(doc, "Close", new Variant(saveOnExit)); 
+		        doc = null; 
+		} 
     } 
 
     /** *//** 
@@ -808,13 +864,13 @@ public class MSWordManager {
      *     
      */ 
     public void close() { 
-            closeDocument(); 
-            if (word != null) { 
-                    Dispatch.call(word, "Quit"); 
-                    word = null; 
-            } 
-            selection = null; 
-            documents = null; 
+		closeDocument(); 
+		if (word != null) { 
+		        Dispatch.call(word, "Quit"); 
+		        word = null; 
+		} 
+		selection = null; 
+		documents = null; 
     } 
 
     /** *//** 
@@ -822,31 +878,55 @@ public class MSWordManager {
      *     
      */ 
     public void printFile() { 
-            if (doc != null) { 
-                    Dispatch.call(doc, "PrintOut"); 
-            } 
+		if (doc != null) { 
+		        Dispatch.call(doc, "PrintOut"); 
+		} 
     } 
 
     public static void main(String args[])throws Exception { 
- 
- 
-
-            MSWordManager msWordManager = new MSWordManager(true); 
-            msWordManager.createNewDocument(); 
-
-             
-             
-            msWordManager.insertText("aaaaaaaaaaaaaaaaaaaaa"); 
-            msWordManager.moveEnd(); 
-
-         
-             
-         
-            msWordManager.close(); 
-
+		
+		
+		
+		MSWordManager msWordManager = new MSWordManager(true); 
+		msWordManager.createNewDocument(); 
+		
+		 
+		 
+		msWordManager.insertText("aaaaaaaaaaaaaaaaaaaaa"); 
+		msWordManager.moveEnd(); 
+		
+		
+		 
+		
+		msWordManager.close(); 
+		
     } 
      
     private String getKey(String key) {
     	return "${"+key+"}";
+    }
+    //获取标记正则
+    private String getTagRegex() {
+    	return "\\$(.*?)\\$";
+    }
+    //判断是否为标记字符串
+    private boolean isTag(String newText) {
+    	Pattern pattern = Pattern.compile(this.getTagRegex());
+        Matcher matcher = pattern.matcher(newText);
+        if(matcher.find()) {
+        	return true;
+        }
+        return false;
+    }
+    //设置或清除标记（当字体有标记时清除，没标记时加标记）
+    private void setTagFont(Dispatch font,String tag) {
+    	if(tag.indexOf(TagType.TAG_UP)>-1) {
+			Dispatch.put(font, "Superscript", new Variant(TagType.TAG_TOGGLE)); 
+		}else if(tag.indexOf(TagType.TAG_DOWN)>-1) {
+			Dispatch.put(font, "Subscript", new Variant(TagType.TAG_TOGGLE)); 
+		}
+		if(tag.indexOf(TagType.ITALIC)>-1) {
+			Dispatch.put(font, "Italic", new Variant(TagType.TAG_TOGGLE)); 
+		}
     }
 }

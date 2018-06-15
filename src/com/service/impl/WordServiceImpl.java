@@ -1,6 +1,9 @@
 package com.service.impl;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -42,6 +45,10 @@ public class WordServiceImpl implements WordService{
 	@Override
 	public String replace(OfficeBean bean) throws Exception {
 		logger.info("start replace word :{}",JSONObject.fromObject(bean).toString());
+		String suffix = SystemUtil.getFileSuffix(bean.getPath()).toLowerCase();
+		if(!FileType.DOC.getName().equals(suffix) && !FileType.DOCX.getName().equals(suffix)) {
+			throw new Exception("源文件只支持word文档");
+		}
 		MSWordManager ms= null;
     	ComThread.InitSTA(); 
     	String temp = null;
@@ -148,6 +155,10 @@ public class WordServiceImpl implements WordService{
 		if(bean.getFileType()==null) {
 			throw new Exception("转换类型不能为空");
 		}
+		String suffix = SystemUtil.getFileSuffix(bean.getPath()).toLowerCase();
+		if(!FileType.DOC.getName().equals(suffix) && !FileType.DOCX.getName().equals(suffix)) {
+			throw new Exception("源文件只支持word文档");
+		}
 		String result = null;
 		ComThread.InitSTA(); 
 		try {
@@ -167,13 +178,22 @@ public class WordServiceImpl implements WordService{
 		logger.info("start word merge :{}",JSONObject.fromObject(bean).toString());
 		List<String> merge = bean.getMerge();
 		String result = bean.getOutput();
+		//验证文件格式
+		for (String path : merge) {
+			String suffix = SystemUtil.getFileSuffix(path).toLowerCase();
+			if(!FileType.DOC.getName().equals(suffix) 
+					&& !FileType.DOCX.getName().equals(suffix)
+					&& !FileType.PDF.getName().equals(suffix)) {
+				throw new Exception("源文件只支持word文档或pdf文档");
+			}
+		}
+		//输出路径验证
+		if(result==null || "".equals(result)) {
+			throw new Exception("输出文件路径不能为空");
+		}
 		ComThread.InitSTA(); 
 		List<String> tempFiles = null;//临时文件路径
 		try {
-			//输出路径验证
-			if(result==null || "".equals(result)) {
-				throw new Exception("输出文件路径不能为空");
-			}
 			result = SystemUtil.getPathWithoutSuffix(result)+".pdf";
 			//合并文档 先转pdf  合并pdf
 			PDFMergerUtility mergePdf = new PDFMergerUtility();
@@ -181,7 +201,12 @@ public class WordServiceImpl implements WordService{
 			for (String path : merge) {
 				//根据地址将文档转换成pdf
 				String filePath = tempFile+System.currentTimeMillis()+"_merge.pdf";
-				this.createTemp(path, FileType.PDF,filePath);
+				//如果为pdf文件  不需要转换直接复制到临时文件夹
+				if(SystemUtil.getFileSuffix(path).toLowerCase().equals(FileType.PDF.getName())) {
+					SystemUtil.copyFile(path, filePath);
+				}else {
+					this.createTemp(path, FileType.PDF,filePath);
+				}
 				mergePdf.addSource(filePath);
 				tempFiles.add(filePath);
 			}

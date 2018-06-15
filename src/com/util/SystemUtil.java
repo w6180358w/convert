@@ -1,6 +1,9 @@
 package com.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -182,5 +185,34 @@ public class SystemUtil {
     		throw new Exception("该路径为文件夹："+path);
     	}
     	return file;
+    }
+    //获取文件后缀名
+    public static String getFileSuffix(String path) throws Exception {
+        String fileName = getFileName(path);
+        String suffix = fileName.substring(fileName.lastIndexOf(".") + 1);
+        return suffix;
+    }
+    
+    public static void copyFile(String oldPath,String newPath) throws Exception {
+    	FileInputStream in = null;
+    	FileOutputStream out = null;
+    	try {
+			File oldFile = new File(oldPath);
+			File file = new File(newPath);
+			in = new FileInputStream(oldFile);
+			out = new FileOutputStream(file);;
+
+			byte[] buffer=new byte[2097152];
+			
+			while((in.read(buffer)) != -1){
+			    out.write(buffer);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		} finally {
+			if(in!=null) in.close();
+			if(out!=null) out.close();
+		}
     }
 }
