@@ -318,16 +318,29 @@ public class WordController {
 	 * 
 	 * @apiParam {String} path 文件路径+文件名（带后缀）
 	 * @apiParam {String} output 输出文件全路径+文件名+后缀 为空则保存到临时文件夹中
-	 * @apiParam {Data} data 需要替换的内容对象，key值为替换关键字，value为内容 如果替换内容为表格 key值必须以Table为开头 以【_】下划线为连接 表格标记为结尾 <br>
-	 * 							例如：Table_1 表示替换第一个表格的内容  Table_2替换第二个表格的内容 <br>
-	 * 							内容中以$$标记的为特殊符号标记，总格式为 <strong>$字符1_字符1类型,字符2_字符2类型$字符3(不需要转类型)</strong><br>
+	 * @apiParam {Data} data 需要替换的内容对象，key值为替换关键字，value为内容 <br>
+	 * 							<strong>1.&nbsp;&nbsp;表格 </strong><br>
+	 * 								如果替换内容为表格 key值必须以Table为开头 以【_】下划线为连接 表格标记为结尾 <br>
+	 * 								数据是一个二维数组  一维代表行  二维代表列 <br>
+	 * 								表格内容支持标记字符串<br>
+	 * 							<strong>2.&nbsp;&nbsp;字符串</strong> <br>
+	 * 							如果是替换字符串,并且内容中有一段内容被$符号包括，则该字符串为标记字符串<br>
+	 * 							总格式为 <strong>$字符1_字符1类型,字符2_字符2类型$字符3(不转类型)</strong><br>
 	 * 							例：<strong>$X_tuit,n_tdit,Y_it,2_tu,=5%, k_it,=2$</strong>.end <br>
 	 * 							其中逗号分隔标记字符串，下划线左边为输出字符串，右边为标记类型<strong>（it:斜体,tu:上标,td:下标）</strong> 
 	 * 							斜体和上下标可共存，上下标互斥。例：Y_it,2_tu 输出为Y（斜体）的二次方 <br>
-	 * 							如果没有下划线分割如=5%则直接输出=5% <br>
+	 * 							如果没有下划线分割如上例中=5%则直接输出=5% <br>
 	 * 							$$标记结束后的字符串直接输出，如上例中.end<br>
 	 * 							上例解析后为  X(上标斜体)n(下标斜体)Y(斜体)2(上标)=5% k(斜体)=2.end <br>
-	 * @apiParam {String[][]} data.Table_*  需要替换表格数据  一个二维数组  一维代表行  二维代表列
+	 * 							<strong>3.&nbsp;&nbsp;图片</strong> <br>
+	 * 							如果替换内容为图片，则需要传json格式内容<br>
+	 * 							例如{"Image_img2":{"suffix":"jpg","width":100,"height":100,"base64":""}<br>
+	 * 							Image_img2表是替换${Image_img2}为图片,值对象中suffix为图片后缀，width为宽，height为高，base64为该图片base64字符串
+	 * 							如果宽高为空 则使用默认图片大小
+	 * 							
+	 * @apiParam {String[][]} data.Table_*  例如：Table_1 表示替换第一个表格的内容  Table_2替换第二个表格的内容 <br>
+	 * @apiParam {ImageBean} data.Image_*  如果替换内容为图片,必须以Image_开头
+	 * 										
 	 *
 	 * @apiSuccess {Number} code 0:失败 1:成功
 	 * @apiSuccess {String} msg 提示消息

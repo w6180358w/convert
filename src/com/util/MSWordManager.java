@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.bean.ImageBean;
 import com.bean.TableTagBean;
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
@@ -281,6 +282,7 @@ public class MSWordManager {
      * @return 
      */ 
     public boolean replaceImage(String toFindText, String imagePath) { 
+    	toFindText = this.getKey(toFindText);
 		if (!find(toFindText)) 
 		        return false; 
 		Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
@@ -294,11 +296,21 @@ public class MSWordManager {
      * @param toFindText 查找字符串 
      * @param imagePath 图片路径 
      */ 
-    public void replaceAllImage(String toFindText, String imagePath) { 
+    public void replaceAllImage(String toFindText, ImageBean bean) { 
+    	toFindText = this.getKey(toFindText);
+    	this.moveStart();
 		while (find(toFindText)) { 
-		        Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
-		                        "AddPicture", imagePath); 
-		        Dispatch.call(selection, "MoveRight"); 
+			Dispatch img = Dispatch.call(Dispatch.get(selection, "InLineShapes").toDispatch(), 
+		                        "AddPicture", bean.getPath()).toDispatch(); 
+			if(bean.getHeight()!=null && bean.getHeight()>0) {
+				Dispatch.call(img, "Select"); // 选中图片
+				Dispatch.put(img, "Height", new Variant(bean.getHeight())); // 图片的高度
+			}
+			if(bean.getWidth()!=null && bean.getWidth()>0) {
+				Dispatch.call(img, "Select"); // 选中图片
+				Dispatch.put(img, "Width", new Variant(bean.getWidth())); // 图片的宽度
+			}
+			Dispatch.call(selection, "MoveRight"); 
 		} 
     } 
 

@@ -2,8 +2,8 @@ package com.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -12,12 +12,14 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bean.ImageBean;
 import com.zhuozhengsoft.pageoffice.OpenModeType;
 import com.zhuozhengsoft.pageoffice.PageOfficeCtrl;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
+import sun.misc.BASE64Decoder;
 
 public class SystemUtil {
 	
@@ -215,4 +217,36 @@ public class SystemUtil {
 			if(out!=null) out.close();
 		}
     }
+    
+    //base64字符串转化成图片  
+    public static ImageBean generateImage(ImageBean bean) throws Exception  { 
+    	String result = null;
+    	//对字节数组字符串进行Base64解码并生成图片  
+        if (bean.getBase64() == null || "".equals(bean.getBase64())) //图像数据为空  
+        	return null;
+        BASE64Decoder decoder = new BASE64Decoder();  
+        OutputStream out = null;
+        try {  
+            //Base64解码  
+            byte[] b = decoder.decodeBuffer(bean.getBase64());  
+            for(int i=0;i<b.length;++i)  {  
+                if(b[i]<0)  
+                {//调整异常数据  
+                    b[i]+=256;  
+                }  
+            }  
+            //生成jpeg图片  
+            result = bean.getPath()+System.currentTimeMillis()+"."+bean.getSuffix();//新生成的图片  
+            out = new FileOutputStream(result);      
+            out.write(b);  
+            out.flush();  
+            bean.setPath(result);
+        }   
+        catch (Exception e) {  
+        	throw e;
+        }  finally {
+        	if(out!=null)out.close();
+        }
+        return bean;
+    }  
 }

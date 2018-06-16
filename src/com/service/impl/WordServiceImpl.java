@@ -1,9 +1,6 @@
 package com.service.impl;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -16,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.bean.FileType;
+import com.bean.ImageBean;
 import com.bean.OfficeBean;
 import com.jacob.com.ComThread;
 import com.service.inter.WordService;
@@ -60,10 +58,21 @@ public class WordServiceImpl implements WordService{
 			ms.openDocument(result);
 			//循环参数
 			for (Entry<String, Object> entry : bean.getData().entrySet()) {
-				if(entry.getKey().indexOf("Table_")>-1) {
-					ms.replaceTable(entry.getKey(),(List<List<String>>) entry.getValue());
+				String key = entry.getKey();
+				if(key.indexOf("Table_")>-1) {
+					ms.replaceTable(key,(List<List<String>>) entry.getValue());
+				}else if(key.indexOf("Image_")>-1) {
+					ImageBean image = (ImageBean) JSONObject.toBean(JSONObject.fromObject(entry.getValue()), ImageBean.class);
+					//设置临时文件夹
+					image.setPath(tempFile);
+					//转图片
+					SystemUtil.generateImage(image);
+					//如果返回路径不为空  则替换图片
+					if(image.getPath()!=null && !"".equals(image.getPath())) {
+						ms.replaceAllImage(key,image);
+					}
 				}else {
-					ms.replaceAllText(entry.getKey(), entry.getValue()+"");
+					ms.replaceAllText(key, entry.getValue()+"");
 				}
 			}
 			ms.setSaveOnExit(false);

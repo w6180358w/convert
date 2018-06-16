@@ -7,15 +7,15 @@ public enum FileType {
 	RFT("rtf",6),//RTF 格式 (.rtf)  
 	HTML("htm",8),//HTML 文档 (.htm)(带文件夹)    
 	MHTML("mht",9),//MHTML 文档 (.mht)(单文件)  
-	XML("xml",9),//XML 文档 (.xml)    
+	XML("xml",11),//XML 文档 (.xml)    
 	DOCX("docx",12),//Microsoft Word 文档 (.docx)    
 	DOCM("docm",13),//Microsoft Word 启用宏的文档 (.docm)    
 	DOTX("dotx",14),//Microsoft Word 模板 (.dotx)   
 	DOTM("dotm",15),//Microsoft Word 启用宏的模板 (.dotm) 
 	PDF("pdf",17),//PDF 文件 (.pdf)    
 	XPS("xps",18),//XPS 文档 (.xps)   
-	ODT("odt",9),//OpenDocument 文本 (.odt)    
-	WTF("wtf",9);//WTF 文件 (.wtf)   
+	ODT("odt",23),//OpenDocument 文本 (.odt)    
+	WTF("wtf",24);//WTF 文件 (.wtf)   
 	
 	private FileType(String name,Integer type) {
 		this.name = name;
