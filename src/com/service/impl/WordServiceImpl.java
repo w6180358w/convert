@@ -70,6 +70,7 @@ public class WordServiceImpl implements WordService{
 					//如果返回路径不为空  则替换图片
 					if(image.getPath()!=null && !"".equals(image.getPath())) {
 						ms.replaceAllImage(key,image);
+						SystemUtil.deleteFile(image.getPath());
 					}
 				}else {
 					ms.replaceAllText(key, entry.getValue()+"");
