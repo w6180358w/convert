@@ -187,9 +187,9 @@ public class WordController {
 		//设置服务器页面
 		poCtrl.setServerPage(request.getContextPath()+"/poserver.zz");
 		
-		poCtrl.setAllowCopy(false);//禁止拷贝
+		poCtrl.setAllowCopy(true);//禁止拷贝
 		poCtrl.setMenubar(false);//隐藏菜单栏
-		poCtrl.setOfficeToolbars(false);//隐藏Office工具条
+		poCtrl.setOfficeToolbars(true);//隐藏Office工具条
 		//添加自定义按钮
 		poCtrl.addCustomToolButton("保存","Save()",1);
 		//设置保存页面
