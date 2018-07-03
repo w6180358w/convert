@@ -18,6 +18,7 @@
 	<tx:annotation-driven transaction-manager="commonTxManager" />
 	<bean id="configProperties" 
 		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property  name="fileEncoding" value="UTF-8"/> 
 		<property name="locations">
 			<list>
 				<value>/WEB-INF/conf/*.properties</value>

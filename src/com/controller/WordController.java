@@ -11,6 +11,7 @@ import java.net.URLEncoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,8 @@ public class WordController {
 	private String server;
 	@Value("#{configProperties['tempFile']}")
 	private String tempFile;
+	@Value("#{configProperties['title']}")
+	private String title;
 	
 	private static final String KEY = "convert";
 	
@@ -154,11 +157,9 @@ public class WordController {
 	public String previewShow(HttpServletRequest request,
 			HttpServletResponse response,String path) throws Exception{
 		logger.info("show preview word page:{}",path);
-		PageOfficeCtrl poCtrl=new PageOfficeCtrl(request);
-		//设置服务器页面
-		poCtrl.setServerPage(request.getContextPath()+"/poserver.zz");
-
-		poCtrl.setTitlebar(false);//隐藏标题栏
+		
+		PageOfficeCtrl poCtrl = getCtrl(request);
+		
 		poCtrl.setAllowCopy(false);//禁止拷贝
 		poCtrl.setMenubar(false);//隐藏菜单栏
 		poCtrl.setOfficeToolbars(false);//隐藏Office工具条
@@ -183,15 +184,16 @@ public class WordController {
 	public String editShow(HttpServletRequest request,
 			HttpServletResponse response,String path) throws Exception{
 		logger.info("show edit word page:{}",path);
-		PageOfficeCtrl poCtrl=new PageOfficeCtrl(request);
-		//设置服务器页面
-		poCtrl.setServerPage(request.getContextPath()+"/poserver.zz");
+		PageOfficeCtrl poCtrl = getCtrl(request);
 		
 		poCtrl.setAllowCopy(true);//禁止拷贝
 		poCtrl.setMenubar(false);//隐藏菜单栏
 		poCtrl.setOfficeToolbars(true);//隐藏Office工具条
 		//添加自定义按钮
 		poCtrl.addCustomToolButton("保存","Save()",1);
+		//保存自动关闭文档窗口  closeWindow参数为jsp文件中对应closeWindow方法
+		poCtrl.setJsFunction_AfterDocumentSaved("closeWindow");
+		
 		//设置保存页面
 		poCtrl.setSaveFilePage("save?path="+URLEncoder.encode(path,"UTF-8"));
 		poCtrl.webOpen(getPath(path),OpenModeType.docNormalEdit,"张佚名");
@@ -282,11 +284,15 @@ public class WordController {
 	 *	"output":"f:\\测试新版.pdf",
 	 *	}
 	 * @apiSuccessExample {json} Success-Response:
-	 *	{
-	 *	    "code": 1,
-	 *	    "data": "FI3J2EPD%2BB%2FQqcJTe5Zlm7JqudbhVB71Po5zUtOQ%2Fxg%3D",
-	 *	    "msg": "合并成功"
-	 *	}
+	 *{
+	 *    "code": 1,
+	 *    "data": {
+	 *        "path": "d:\\temp\\zxy1.pdf",
+	 *        "desPath": "j71IzecDUsE87oCk%2BWtpp63GljifY%2BSI",
+	 *        "page": 9
+	 *    },
+	 *    "msg": "合并成功"
+	 *}
 	 */
 	@RequestMapping(value = "/merge" , method = RequestMethod.POST)
 	@ResponseBody
@@ -296,14 +302,19 @@ public class WordController {
 		String msg = "合并成功";
 		int code = 1;
 		JSONObject allPath = new JSONObject();
+		PDDocument pdf = null;
 		try {
 			String file = this.wordService.merge(bean);
 			String result = getDownloadKey(file);
 			allPath = SystemUtil.getAllPath(file, result);
+			pdf = PDDocument.load(new File(file));
+			allPath.put("page", pdf.getNumberOfPages());
 		} catch (Exception e) {
 			logger.error("merge word error:{}",e);
 			msg = "合并失败:"+e.getMessage();
 			code = 0;
+		} finally {
+			if(pdf!=null)pdf.close();
 		}
 		logger.info("merge word success:{}",allPath);
 		return SystemUtil.request(code, allPath, msg);
@@ -463,5 +474,14 @@ public class WordController {
 			if(temp!=null && !"".equals(temp))new File(temp).delete();
 		}
 		return SystemUtil.request(1, "", "");
+	}
+	
+	private PageOfficeCtrl getCtrl(HttpServletRequest request) {
+		PageOfficeCtrl poCtrl=new PageOfficeCtrl(request);
+		//设置服务器页面
+		poCtrl.setServerPage(request.getContextPath()+"/poserver.zz");
+		poCtrl.setCaption(title);
+		
+		return poCtrl;
 	}
 }
