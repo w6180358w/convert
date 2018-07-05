@@ -359,15 +359,18 @@ public class WordController {
 	 * @apiParamExample {json} Request-Example:
 	 *	{
 	 *	"path":"f:\\测试.doc",
-	 *	"data":{"com":"测试com","name":"测试name","Table_1":[["a","b","c"],["c","d","e"]]},
+	 *	"data":{"com":"测试com","name":"测试name","Table_1":[["a","b","c"],["c","d","e"]],"Image_img3":{"suffix":"jpeg","width":5,"height":100,"base64":""}},
 	 *	"output":"f:\\测试新版.docx"
 	 *	}
 	 * @apiSuccessExample {json} Success-Response:
-	 *	{
-	 *	    "code": 1,
-	 *	    "data": "FI3J2EPD%2BB%2FQqcJTe5Zlm7JqudbhVB71Po5zUtOQ%2Fxg%3D",
-	 *	    "msg": "替换成功"
-	 *	}
+	 *{
+	 *    "code": 1,
+	 *    "data": {
+	 *        "path": "f:\\aaa.docx",
+	 *        "desPath": "KJHTD%2BxgGwvZKlShVWVCsgfGJ5ZKAJxVVhqsU8XtLwI%3D"
+	 *    },
+	 *    "msg": "替换成功"
+	 *}
 	 */
 	@RequestMapping(value = "/replace" , method = RequestMethod.POST)
 	@ResponseBody
