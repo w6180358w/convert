@@ -63,6 +63,11 @@ public class WordServiceImpl implements WordService{
 					ms.replaceTable(key,(List<List<String>>) entry.getValue());
 				}else if(key.indexOf("Image_")>-1) {
 					ImageBean image = (ImageBean) JSONObject.toBean(JSONObject.fromObject(entry.getValue()), ImageBean.class);
+					//如果base64字符串为空  则替换空字符串
+					if(image.getBase64()==null || "".equals(image.getBase64())) {
+						ms.replaceAllText(key, "");
+						continue;
+					}
 					//设置临时文件夹
 					image.setPath(tempFile);
 					//转图片

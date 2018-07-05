@@ -430,6 +430,7 @@ public class WordController {
 		String msg = "转换成功";
 		int code = 1;
 		JSONObject allPath = new JSONObject();
+		PDDocument pdf = null;
 		try {
 			//如果是加密路径  则解密
 			if(bean.getDesPath()!=null && !"".equals(bean.getDesPath())) {
@@ -438,10 +439,14 @@ public class WordController {
 			String file = this.wordService.convert(bean);
 			String result = getDownloadKey(file);
 			allPath = SystemUtil.getAllPath(file, result);
+			pdf = PDDocument.load(new File(file));
+			allPath.put("page", pdf.getNumberOfPages());
 		} catch (Exception e) {
 			logger.error("convert file error:{}",e);
 			msg = "转换失败:"+e.getMessage();
 			code = 0;
+		} finally {
+			if(pdf!=null)pdf.close();
 		}
 		logger.info("convert file success :{}",allPath);
 		return SystemUtil.request(code, allPath, msg);

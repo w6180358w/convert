@@ -220,6 +220,7 @@ public class SystemUtil {
     
     //base64字符串转化成图片  
     public static ImageBean generateImage(ImageBean bean) throws Exception  { 
+    	logger.info("generateImage start :{}",JSONObject.fromObject(bean).toString());
     	String result = null;
     	//对字节数组字符串进行Base64解码并生成图片  
         if (bean.getBase64() == null || "".equals(bean.getBase64())) //图像数据为空  
@@ -243,10 +244,12 @@ public class SystemUtil {
             bean.setPath(result);
         }   
         catch (Exception e) {  
+        	logger.info("generateImage error:{}",e);
         	throw e;
         }  finally {
         	if(out!=null)out.close();
         }
+        logger.info("generateImage success:{}",JSONObject.fromObject(bean).toString());
         return bean;
     }  
 }
