@@ -416,11 +416,15 @@ public class WordController {
 	 *	}
 	 *	
 	 * @apiSuccessExample {json} Success-Response:
-	 *	{
-	 *	    "code": 1,
-	 *	    "data": "FI3J2EPD%2BB%2FQqcJTe5Zlm7JqudbhVB71Po5zUtOQ%2Fxg%3D",
-	 *	    "msg": "转换成功"
-	 *	}
+	 *{
+	 *    "code": 1,
+	 *    "data": {
+	 *        "path": "D:\\temp\\aaa.pdf",
+	 *        "desPath": "FI3J2EPD%2BB%2B3OTMf90X21lENzIXrQ6QH",
+	 *        "page": 3
+	 *    },
+	 *    "msg": "转换成功"
+	 *}
 	 */
 	@RequestMapping(value = "/convert" , method = RequestMethod.POST)
 	@ResponseBody
