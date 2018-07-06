@@ -207,11 +207,33 @@ public class MSWordManager {
      * @param newText 要替换的内容 
      */ 
     public void replaceAllText(String toFindText, String newText) { 
+    	//获取关键字
     	toFindText = this.getKey(toFindText.trim());
+    	//光标移动到文档开始处
     	this.moveStart();
         while (find(toFindText)) { 
         	replaceText(newText);
         } 
+        //替换页眉页脚中数据
+        int allPage = Integer.parseInt(Dispatch.call(selection,"information",4).toString());
+        //取得视窗对象    取得活动窗格对象   取得活动窗体对象   
+        Dispatch View = Dispatch.get(Dispatch.get(word.getProperty( "ActiveWindow").toDispatch(), "ActivePane").toDispatch(), "View").toDispatch();   
+        for(int i=0;i<allPage;i++) {
+        	if(i+1<allPage) {
+        		Dispatch.call(selection,"goto",new Object[] {new Variant(1),new Variant(2),new Variant(i+1)});
+        	}
+        	/****设置页眉*****/  
+            Dispatch.put(View, "SeekView", new Variant(9));  
+            while (find(toFindText)) { 
+            	replaceText(newText);
+            } 
+            /****设置页脚*****/  
+            Dispatch.put(View, "SeekView", "10");  
+            while (find(toFindText)) { 
+            	replaceText(newText);
+            } 
+            Dispatch.put(View,  "SeekView" ,  new  Variant( 0 ));  // wdSeekMainDocument-0恢复视图; 
+        }
     } 
     /**
      * 真正替换内容的方法
@@ -688,7 +710,6 @@ public class MSWordManager {
         Dispatch cells = Dispatch.get(row, "Cells").toDispatch(); 
         int celCount = Dispatch.get(cells, "Count").changeType(  
                 Variant.VariantInt).getInt();
-        System.out.println(celCount);
         int count = celCount>dataList.size()?celCount:dataList.size();
         for(int i=0;i<count;i++) {
         	Dispatch cell = null; 
