@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bean.FileType;
 import com.bean.OfficeBean;
 import com.jacob.com.ComThread;
 import com.service.inter.WordService;
@@ -446,8 +447,12 @@ public class WordController {
 			String file = this.wordService.convert(bean);
 			String result = getDownloadKey(file);
 			allPath = SystemUtil.getAllPath(file, result);
-			pdf = PDDocument.load(new File(file));
-			allPath.put("page", pdf.getNumberOfPages());
+			String suffix = SystemUtil.getFileSuffix(file).toLowerCase();
+			//如果专成pdf  则返回总页数
+			if(FileType.PDF.getName().equals(suffix)) {
+				pdf = PDDocument.load(new File(file));
+				allPath.put("page", pdf.getNumberOfPages());
+			}
 		} catch (Exception e) {
 			logger.error("convert file error:{}",e);
 			msg = "转换失败:"+e.getMessage();
