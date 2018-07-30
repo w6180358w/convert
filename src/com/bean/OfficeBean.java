@@ -11,6 +11,8 @@ public class OfficeBean {
 	private FileType fileType;//文件类型
 	private String output;	//输出的文件路径 带文件名
 	
+	private Boolean hf;//是否替换页眉页脚
+	
 	private Map<String,Object> data;	//要替换的数据
 	
 	private List<String> merge;
@@ -56,5 +58,11 @@ public class OfficeBean {
 	}
 	public void setOutput(String output) {
 		this.output = output;
+	}
+	public Boolean getHf() {
+		return hf;
+	}
+	public void setHf(Boolean hf) {
+		this.hf = hf;
 	}
 }

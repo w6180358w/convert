@@ -65,7 +65,7 @@ public class WordServiceImpl implements WordService{
 					ImageBean image = (ImageBean) JSONObject.toBean(JSONObject.fromObject(entry.getValue()), ImageBean.class);
 					//如果base64字符串为空  则替换空字符串
 					if(image.getBase64()==null || "".equals(image.getBase64())) {
-						ms.replaceAllText(key, "");
+						ms.replaceAllText(key, "",false);
 						continue;
 					}
 					//设置临时文件夹
@@ -78,7 +78,7 @@ public class WordServiceImpl implements WordService{
 						SystemUtil.deleteFile(image.getPath());
 					}
 				}else {
-					ms.replaceAllText(key, entry.getValue()+"");
+					ms.replaceAllText(key, entry.getValue()+"",bean.getHf());
 				}
 			}
 			ms.setSaveOnExit(false);

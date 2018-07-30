@@ -329,6 +329,7 @@ public class WordController {
 	 * @apiHeader Content-Type=application/json
 	 * 
 	 * @apiParam {String} path 文件路径+文件名（带后缀）
+	 * @apiParam {Boolean} hf 是否替换页眉页脚 true:替换 false:不替换  默认为false
 	 * @apiParam {String} output 输出文件全路径+文件名+后缀 为空则保存到临时文件夹中
 	 * @apiParam {Data} data 需要替换的内容对象，key值为替换关键字，value为内容 <br>
 	 * 							<strong>1.&nbsp;&nbsp;表格 </strong><br>
@@ -360,6 +361,7 @@ public class WordController {
 	 * @apiParamExample {json} Request-Example:
 	 *	{
 	 *	"path":"f:\\测试.doc",
+	 *	"hf":true,
 	 *	"data":{"com":"测试com","name":"测试name","Table_1":[["a","b","c"],["c","d","e"]],"Image_img3":{"suffix":"jpeg","width":5,"height":100,"base64":""}},
 	 *	"output":"f:\\测试新版.docx"
 	 *	}
@@ -382,6 +384,10 @@ public class WordController {
 		int code = 1;
 		JSONObject allPath = new JSONObject();
 		try {
+			//默认不替换页眉页脚
+			if(bean.getHf()==null) {
+				bean.setHf(false);
+			}
 			String file = this.wordService.replace(bean);
 			String result = getDownloadKey(file);
 			allPath = SystemUtil.getAllPath(file, result);
