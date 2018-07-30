@@ -14,7 +14,7 @@ String window = request.getParameter("window");
     <script type="text/javascript" src="/convert/pageoffice.js" id="po_js_main"></script>
 </head>
 <body>
-<div style=" width:auto; height:700px;">
+<div style=" width:auto; height:auto;" id="page">
     <%=poCtrl.getHtmlCode("PageOfficeCtrl1")%>
 </div>
 <script type="text/javascript">
@@ -39,8 +39,22 @@ $(document).ready(function() {
 		idWindow = true;
 		setTimeout(openDoc,500);//延时3秒 
 	}
-	
+	resize();
+	$(window).resize(resize);
+
 });
+function resize(){
+	var winHeight=0;
+    if (window.innerHeight)
+        winHeight = window.innerHeight;
+    else if ((document.body) && (document.body.clientHeight))
+        winHeight = document.body.clientHeight;
+    //通过Document对body进行检测，获取浏览器可视化高度
+    if (document.documentElement && document.documentElement.clientHeight)
+        winHeight = document.documentElement.clientHeight;
+    //DIV高度为浏览器窗口高度
+    document.getElementById("page").style.height= (winHeight-30) +"px";
+}
 function openDoc(){
 	POBrowser.openWindowModeless(window.location.href+"&window=true", 'width=1050px;height =900px;');
 }
